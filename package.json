@@ -1,0 +1,39 @@
+{
+  "name": "@governx/hyperapp-boilerplate",
+  "version": "1.0.0",
+  "description": "Basic hyperapp boilerplate",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "PROD=true parcel build src/index.html --public-url /",
+    "preship": "npm run build && cp ./dist/index.html ./dist/200.html",
+    "ship": "npm run preship && surge ./dist --domain https://hyperapp-boilerplate.surge.sh",
+    "test": "src/test.index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/governx/hyperapp-boilerplate.git"
+  },
+  "keywords": [
+    "hyperapp"
+  ],
+  "author": "Nick Dodson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/governx/hyperapp-boilerplate/issues"
+  },
+  "homepage": "https://github.com/governx/hyperapp-boilerplate#readme",
+  "dependencies": {
+    "@hyperapp/router": "^0.7.0",
+    "detect-browser": "^3.0.1",
+    "hyperapp": "^1.2.9",
+    "hyperx": "^2.4.0",
+    "regenerator-runtime": "^0.12.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.0",
+    "parcel-bundler": "^1.10.3",
+    "babel-plugin-transform-nojsx": "^0.1.2"
+  }
+}
