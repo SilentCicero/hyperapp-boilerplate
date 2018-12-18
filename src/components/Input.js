@@ -80,13 +80,30 @@ export const actions = {
         defaultValue: elm.defaultValue,
       }});
 
-    validators[props.id] = elm.validate;
+    validators[props.id] = props.validate;
     warnings[props.id] = props.warn;
   },
   touch: e => (state, actions) => {
     if(!selectInput({ inputs: state }, e.target.id).touched) actions.change({ id: e.target.id, obj: {
       touched: true,
     }});
+  },
+  validate: form => async (state, actions) => {
+    const keys = Object.keys(state[form]);
+    for (var k = 0; k < keys.length; k++) { // inputs
+      const id = keys[k];
+      const valids = (validators[`${form}.${id}`] || noop)() || [];
+      const input = selectInput({ inputs: state }, `${form}.${id}`);
+
+      for (var i = 0; i < valids.length; i++) {
+        const raw = valids[i](input.value, input); // get validator raw result
+        const result = await ((raw || {}).then ? raw : Promise.resolve(raw));
+
+        if (result) return actions.change({ id: `${form}.${id}`, obj: {
+          error: result,
+        }});
+      }
+    }
   },
   clear: form => (state, actions) => {
     const inputs = state[form];
@@ -123,17 +140,17 @@ export const actions = {
 };
 
 export const Input = props => (state, actions, d = nameData(props.id)) => html`<InputInner
-    ${props}
-    oncreate=${e => actions.inputs.create(props)}
-    onupdate=${(e, o) => actions.inputs.update({ elm: e, old: o, props })}
+    ${assign(props, { value: undefined })}
+    oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)())}
+    onupdate=${(e, o) => noop(actions.inputs.update({ elm: e, old: o, props }), (props.onupdate || noop)())}
     value=${((state.inputs[d.form] || {})[d.id] || {}).value}
-    onfocus=${actions.inputs.touch}
+    onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
     oninput=${e => noop(actions.inputs.input(e), (props.oninput || noop)(e))}></InputInner>`;
 
 export const Textarea = props => (state, actions, d = nameData(props.id)) => html`<TextareaInner
-    ${props}
-    oncreate=${e => actions.inputs.create(props)}
-    onupdate=${(e, o) => actions.inputs.update({ elm: e, old: o, props })}
+    ${assign(props, { value: undefined })}
+    oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)())}
+    onupdate=${(e, o) => noop(actions.inputs.update({ elm: e, old: o, props }), (props.onupdate || noop)())}
     value=${((state.inputs[d.form] || {})[d.id] || {}).value}
-    onfocus=${actions.inputs.touch}
+    onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
     oninput=${e => noop(actions.inputs.input(e), (props.oninput || noop)(e))}></TextareaInner>`;

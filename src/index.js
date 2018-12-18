@@ -38,6 +38,9 @@ const actions = {
   language: id => () => id,
   environment: {
     change: val => (val),
+    online: val => (state, actions) => {
+      if(state.online !== val) actions.change({ online: val });
+    },
   },
   load: event => (state, actions) => {
     // detect browser and os
@@ -50,7 +53,7 @@ const actions = {
     });
 
     // start checking if online
-    isOnline(e => actions.environment.change({ online: e }));
+    isOnline(actions.environment.online);
   },
 };
 

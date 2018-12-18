@@ -15,9 +15,11 @@ export const DefaultView = props => (state, actions) => {
 
       <Input
         mt="40px"
+        value="fsdfds"
         id="login.name"
         defaultValue="Johnson"
-        warn=${e => ([ required, maxLength(10) ])}
+        validate=${e => [ required ]}
+        warn=${e => [ maxLength(10) ]}
         placeholder="hello"></Input>
 
       Value: ${selectInput(state, 'login.name').value}
@@ -26,11 +28,12 @@ export const DefaultView = props => (state, actions) => {
 
       <br /><br />
 
-      <Textarea mt="40px" id="login.email" defaultValue="Swanson" placeholder="hello"></Textarea>
+      <Textarea mt="40px" id="login.email" placeholder="hello"></Textarea>
       Value: ${selectInput(state, 'login.email').value}
       Touched: ${selectInput(state, 'login.email').touched ? 'true' : 'false'}
       Error: ${selectInput(state, 'login.email').error || 'none'}
 
+      <button onclick=${e => actions.inputs.validate('login')}>Validate</button>
       <button onclick=${e => actions.inputs.clearDefault('login')}>Clear</button>
 
             <br /><br />
