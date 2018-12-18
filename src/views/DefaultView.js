@@ -1,10 +1,8 @@
 const {
   html,
 } = require('../utils');
-const { Input } = require('../components/Input');
+const { Input, selectInput } = require('../components/Input');
 const { Div, Meta } = require('../components');
-
-const selectInput = (state, form, id) => ((state.inputs[form] || {})[id] || {});
 
 export const DefaultView = props => (state, actions) => {
   console.log(state.inputs);
@@ -15,11 +13,20 @@ export const DefaultView = props => (state, actions) => {
 
       Hello world!!!!
 
-      <Input mt="40px" id="login.nick" defaultValue="Johnson" placeholder="hello"></Input>
+      <Input mt="40px" id="login.name" defaultValue="Johnson" placeholder="hello"></Input>
 
-      Value: ${selectInput(state, 'login', 'nick').value}
-      Touched: ${selectInput(state, 'login', 'nick').touched ? 'true' : 'false'}
-      Error: ${selectInput(state, 'login', 'nick').error || 'none'}
+      Value: ${selectInput(state, 'login.name').value}
+      Touched: ${selectInput(state, 'login.name').touched ? 'true' : 'false'}
+      Error: ${selectInput(state, 'login.name').error || 'none'}
+
+      <br /><br />
+
+      <Input mt="40px" id="login.email" defaultValue="Swanson" placeholder="hello"></Input>
+      Value: ${selectInput(state, 'login.email').value}
+      Touched: ${selectInput(state, 'login.email').touched ? 'true' : 'false'}
+      Error: ${selectInput(state, 'login.email').error || 'none'}
+
+            <br /><br />
 
       ${state.environment.name}
       ${state.environment.online ? '' : 'Your Offline'}

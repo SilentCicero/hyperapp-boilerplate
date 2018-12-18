@@ -10,6 +10,8 @@ const selectForm = id => String(id).split('.')[0];
 const selectId = id => String(id).split('.')[1] || String(id).split('.')[0];
 const nameData = id => ({ id: selectId(id), form: selectForm(id) });
 
+export const selectInput = (state, id, d = nameData(id)) => ((state.inputs[d.form] || {})[d.id] || {});
+
 // for instal state and actions must be titled 'inputs'
 
 export const state = {
@@ -25,6 +27,7 @@ export const actions = {
       touched: false,
       error: null,
       value: elm.defaultValue,
+      defaultValue: elm.defaultValue,
     }});
   },
   update: ({ elm, old }) => (state, actions) => {
@@ -32,10 +35,11 @@ export const actions = {
       touched: false,
       error: null,
       value: elm.defaultValue,
+      defaultValue: elm.defaultValue,
     }});
   },
   touch: e => (state, actions) => {
-    actions.change({ id: e.target.id, obj: {
+    if(!selectInput({ inputs: state }, e.target.id).touched) actions.change({ id: e.target.id, obj: {
       touched: true,
     }});
   },
