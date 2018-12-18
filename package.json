@@ -4,7 +4,7 @@
   "description": "Basic hyperapp boilerplate",
   "main": "src/index.js",
   "scripts": {
-    "start": "parcel src/index.html",
+    "start": "parcel src/index.html --no-hmr",
     "build": "PROD=true parcel build src/index.html --public-url /",
     "preship": "npm run build && cp ./dist/index.html ./dist/200.html",
     "ship": "npm run preship && surge ./dist --domain https://hyperapp-boilerplate.surge.sh",
@@ -25,9 +25,11 @@
   "homepage": "https://github.com/governx/hyperapp-boilerplate#readme",
   "dependencies": {
     "@hyperapp/router": "^0.7.0",
+    "axios": "^0.18.0",
     "detect-browser": "^3.0.1",
     "hyperapp": "^1.2.9",
     "hyperx": "^2.4.0",
+    "node-polyglot": "^2.3.0",
     "regenerator-runtime": "^0.12.1"
   },
   "devDependencies": {

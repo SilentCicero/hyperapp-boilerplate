@@ -9,15 +9,20 @@ const {
   RouterSwitch,
   onLoad,
   isOnline,
+  el,
 } = require('./utils');
 const style = require('./style');
+const polyglot = require('./');
 const { routes } = require('./routes');
 const { detect } = require('detect-browser');
+const Input = require('./components/Input');
 
 // APP Starts here..
 
 const state = {
   location: location.state,
+  language: 'en',
+  inputs: Input.state,
   environment: {
     name: null,
     version: null,
@@ -29,10 +34,13 @@ const state = {
 
 const actions = {
   location: location.actions,
+  inputs: Input.actions,
+  language: id => () => id,
   environment: {
     change: val => (val),
   },
   load: event => (state, actions) => {
+    // detect browser and os
     const browser = detect() || {};
     actions.environment.change({
       name: browser.name,
@@ -40,6 +48,8 @@ const actions = {
       versionInt: parseInt((browser.version || '').split('.')[0]),
       os: browser.os,
     });
+
+    // start checking if online
     isOnline(e => actions.environment.change({ online: e }));
   },
 };

@@ -1,3 +1,2 @@
-export const i18n = {
-  onunload: 'Are you sure you want to leave the Strike app! Data may be lost.',
-};
+const Polyglot = require('node-polyglot');
+export const polyglot = new Polyglot();
