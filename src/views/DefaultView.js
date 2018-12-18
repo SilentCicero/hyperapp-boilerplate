@@ -1,7 +1,7 @@
 const {
   html,
 } = require('../utils');
-const { Input, selectInput } = require('../components/Input');
+const { Input, Textarea, selectInput, required, maxLength } = require('../components/Input');
 const { Div, Meta } = require('../components');
 
 export const DefaultView = props => (state, actions) => {
@@ -13,7 +13,12 @@ export const DefaultView = props => (state, actions) => {
 
       Hello world!!!!
 
-      <Input mt="40px" id="login.name" defaultValue="Johnson" placeholder="hello"></Input>
+      <Input
+        mt="40px"
+        id="login.name"
+        defaultValue="Johnson"
+        warn=${e => ([ required, maxLength(10) ])}
+        placeholder="hello"></Input>
 
       Value: ${selectInput(state, 'login.name').value}
       Touched: ${selectInput(state, 'login.name').touched ? 'true' : 'false'}
@@ -21,7 +26,7 @@ export const DefaultView = props => (state, actions) => {
 
       <br /><br />
 
-      <Input mt="40px" id="login.email" defaultValue="Swanson" placeholder="hello"></Input>
+      <Textarea mt="40px" id="login.email" defaultValue="Swanson" placeholder="hello"></Textarea>
       Value: ${selectInput(state, 'login.email').value}
       Touched: ${selectInput(state, 'login.email').touched ? 'true' : 'false'}
       Error: ${selectInput(state, 'login.email').error || 'none'}

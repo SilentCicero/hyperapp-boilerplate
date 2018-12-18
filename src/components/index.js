@@ -135,7 +135,7 @@ export const Button = styled.button`
 export const Input = styled.input`
   ${props => mediaProps(props, divInsideProps)}
 `;
-export const Textarea = styled.input`
+export const Textarea = styled.textarea`
   ${props => mediaProps(props, divInsideProps)}
 `;
 export const Img = styled.img`
