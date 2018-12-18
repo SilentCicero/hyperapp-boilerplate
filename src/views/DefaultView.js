@@ -31,6 +31,8 @@ export const DefaultView = props => (state, actions) => {
       Touched: ${selectInput(state, 'login.email').touched ? 'true' : 'false'}
       Error: ${selectInput(state, 'login.email').error || 'none'}
 
+      <button onclick=${e => actions.inputs.clearDefault('login')}>Clear</button>
+
             <br /><br />
 
       ${state.environment.name}

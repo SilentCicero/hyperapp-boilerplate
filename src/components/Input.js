@@ -66,7 +66,7 @@ export const actions = {
     actions.change({ id: props.id, obj: {
       touched: false,
       error: null,
-      value: props.defaultValue,
+      value: props.defaultValue || '',
       defaultValue: props.defaultValue,
     }});
     validators[props.id] = props.validate;
@@ -88,9 +88,24 @@ export const actions = {
       touched: true,
     }});
   },
+  clear: form => (state, actions) => {
+    const inputs = state[form];
+    ObjectMap(inputs, (k, v) => actions.change({ id: `${form}.${k}`, obj: {
+      value: '',
+      error: null,
+    }}));
+  },
+  clearDefault: form => (state, actions) => {
+    const inputs = state[form];
+    ObjectMap(inputs, (k, v) => actions.change({ id: `${form}.${k}`, obj: {
+      value: v.defaultValue || '',
+      error: null,
+    }}));
+  },
   input: e => async (state, actions) => {
     actions.change({ id: e.target.id, obj: {
       value: e.target.value,
+      error: null,
     }});
     const warns = warnings[e.target.id] ? warnings[e.target.id]() : [];
     for (var i = 0; i < warns.length; i++) {
