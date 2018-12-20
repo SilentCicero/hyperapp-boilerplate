@@ -27,6 +27,9 @@ const divInsideProps = props => {
     ${props.minWidth ? `
       min-width: ${props.minWidth};
     ` : ''}
+    ${props.maxHeight ? `
+      max-height: ${props.maxHeight};
+    ` : ''}
     ${props.height ? `
       height: ${props.height};
     ` : ''}
@@ -76,6 +79,7 @@ const divInsideProps = props => {
     ${props.opacity ? `opacity: ${props.opacity};` : ''}
     ${props.ellipsis ? `white-space: nowrap; text-overflow: ellipsis;` : ''}
     ${props.overflow ? `overflow: ${props.overflow};` : ''}
+    ${props.overflowX ? `overflow-x: ${props.overflowX};` : ''}
     ${props.self ? `align-self: ${props.self};` : ''}
     ${props.color ? `color: ${props.color};` : ''}
     ${props.align ? `align-items: ${props.align};` : ''}
@@ -105,6 +109,7 @@ const divInsideProps = props => {
     }
 
     &:hover {
+      ${props.hoverBackground ? `background: ${props.hoverBackground}; ` : ''}
       ${props.hoverShadow ? `box-shadow: ${props.hoverShadow};` : ''}
       ${props.hoverBorder ? `border: ${props.hoverBorder}; ` : ''}
     }
@@ -142,5 +147,8 @@ export const Img = styled.img`
   ${props => mediaProps(props, divInsideProps)}
 `;
 export const Span = styled.span`
+  ${props => mediaProps(props, divInsideProps)}
+`;
+export const A = styled.a`
   ${props => mediaProps(props, divInsideProps)}
 `;

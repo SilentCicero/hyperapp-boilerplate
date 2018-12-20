@@ -5,7 +5,6 @@ let theme = {};
 let globalCSS = '';
 export const docCSS = {};
 export const dangerChars = [
-  /&/g,
   /</g,
   />/g,
   /"/g,
@@ -55,20 +54,20 @@ function buildClass(className, rawCSS) {
   }` : '';
 }
 
-function buildPseudo(className, rawCSS) {
+function buildPseudo(className, rawCSS, all) {
   let output = `
   ${rawCSS.trim()}`;
-  output = output.replace('&', `.${buildName(className)}`);
+  output = output.replace(all ? /&/g : '&', `.${buildName(className)}`);
   return output;
 }
 
 function buildQuery(className, rawCSS) {
   let output = rawCSS;
-
   const innerContent = output.substring(output.indexOf('{') + 1, output.lastIndexOf('}'));
+
   output = `
   ${output.substring(0, output.indexOf('{') + 1)}
-    ${buildCSS(className, innerContent).trim()}
+    ${buildCSS(className, buildPseudo(className, innerContent, true)).trim()}
   }`;
 
   return output;
@@ -96,7 +95,7 @@ function buildCSS(className, rawCSS) {
     const pseudo = output.substring(start, findRightEndBracketPosition(output, start) + 1);
     if (String(pseudo).indexOf('&') !== -1) {
       rawPseudos.push(pseudo);
-      output = output.replace(pseudo, '');
+      output = output.replace(pseudo, '').trim();
       parsePseudos();
     }
   };
@@ -106,7 +105,7 @@ function buildCSS(className, rawCSS) {
     const query = output.substring(start, findRightEndBracketPosition(output, start) + 1);
     if (String(query).indexOf('@media') !== -1) {
       rawQueries.push(query);
-      output = output.replace(query, '');
+      output = output.replace(query, '').trim();
       parseQueries();
     }
   };

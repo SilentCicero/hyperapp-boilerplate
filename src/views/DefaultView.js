@@ -1,15 +1,17 @@
 const {
+  regeneratorRuntime,
   html,
+  days,
+  months,
+  years,
 } = require('../utils');
-const { Input, Textarea, selectInput, required, maxLength } = require('../components/Input');
-const { Div, Meta } = require('../components');
+const { Input, SearchInput, Textarea, selectInput, required, maxLength } = require('../components/Input');
+const { Div, Meta, Span } = require('../components');
 
 export const DefaultView = props => (state, actions) => {
-  console.log(state.inputs);
-
   return html`
     <Div mt="100px" ml="100px">
-      <Meta title="And no.."></Meta>
+      <Meta title="BookThatClass"></Meta>
 
       Hello world!!!!
 
@@ -22,6 +24,12 @@ export const DefaultView = props => (state, actions) => {
         warn=${e => [ maxLength(10) ]}
         placeholder="hello"></Input>
 
+      <Div flex="row">
+        <SearchInput type="number" id="day" strict list=${() => days}></SearchInput>
+        <SearchInput type="number" id="month" strict list=${() => months.map(v => v + 1)}></SearchInput>
+        <SearchInput type="number" id="year" defaultValue="1992" strict list=${() => years} default="1992"></SearchInput>
+      </Div>
+
       Value: ${selectInput(state, 'login.name').value}
       Touched: ${selectInput(state, 'login.name').touched ? 'true' : 'false'}
       Error: ${selectInput(state, 'login.name').error || 'none'}
@@ -33,7 +41,18 @@ export const DefaultView = props => (state, actions) => {
       Touched: ${selectInput(state, 'login.email').touched ? 'true' : 'false'}
       Error: ${selectInput(state, 'login.email').error || 'none'}
 
-      <button onclick=${e => actions.inputs.validate('login')}>Validate</button>
+      <Span background="red" hoverBackground=${'#F1F1F1'} height="20px">dd</Span>
+
+      <button onclick=${e => actions.inputs.validate({
+        form: 'login',
+        validate: async values => {
+          await Promise.resolve('hello');
+          return {
+            name: values.name.length < 4 ? 'this is too short' : undefined,
+          };
+        },
+        onValid: e => console.log('hello world!!'),
+      })}>Validate</button>
       <button onclick=${e => actions.inputs.clearDefault('login')}>Clear</button>
 
             <br /><br />
