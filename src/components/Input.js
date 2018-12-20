@@ -164,12 +164,12 @@ export const Input = props => (state, actions, d = nameData(props.id)) => html`<
     onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
     oninput=${e => noop(actions.inputs.input(e), (props.oninput || noop)(e))}></InputInner>`;
 
-const hovers = {};
 export const SearchInput = props => (state, actions) => {
   const input = selectInput(state, props.id) || {},
     change = obj => actions.inputs.change({ id: props.id, obj }),
-    filtered = ((props.list || noop)() || []),
-    defaultIndex = filtered.map(v => String(v)).indexOf(props.default),
+    list = ((props.list || noop)() || []),
+    defaultIndex = list.map(v => String(v)).indexOf(props.default),
+    option = (v, i) => v,
     index = typeof input.index !== "undefined" ? input.index : (defaultIndex < 0 ? 0 : defaultIndex);
 
   return html`<Div flex="column" position="relative">
@@ -178,20 +178,30 @@ export const SearchInput = props => (state, actions) => {
         change({ open: true });
         let changeIndex = index;
         if(e.keyCode === 38) changeIndex = index - 1 < 0 ? 0 : index - 1;
-        if(e.keyCode === 40) changeIndex = index + 1 >= filtered.length ? filtered.length - 1 : index + 1;
-        if(e.keyCode === 13) change({ value: filtered[changeIndex] || filtered[0], open: false });
+        if(e.keyCode === 40) changeIndex = index + 1 >= list.length ? list.length - 1 : index + 1;
+        if(e.keyCode === 13) {
+          change({ value: list[changeIndex] || list[0], open: false });
+          if(props.next) byid(props.next).focus();
+        }
         if(e.keyCode == 38 || e.keyCode == 40) {
-          change({ stallScroll: false, index: changeIndex, scrollStall: true, value: filtered[changeIndex] });
+          change({ stallScroll: false, index: changeIndex, scrollStall: true, value: list[changeIndex] });
           const height = byid(`${props.id}_0`).offsetHeight;
           byid(`${props.id}_options`).scrollTop = height * changeIndex;
           e.preventDefault();
         }
+        if(e.keyCode === 9) {
+          change({ value: list[index], open: false });
+          e.preventDefault();
+          if(props.next) byid(props.next).focus();
+        }
       }}
       oninput=${e => {
-        const find = filtered.filter(v => String(v).indexOf(String(input.value)) >= 0),
-          findIndex = filtered.indexOf(find[0]);
-        if([38, 40, 13, 9].indexOf(event.which || event.keyCode) === -1)
+        const find = list.filter(v => String(v).indexOf(String(input.value)) >= 0),
+          findIndex = list.indexOf(find[0]);
+        if([38, 40, 13, 9].indexOf(event.which || event.keyCode) === -1) {
+          if (props.strict && findIndex < 0) change({ value: list[index] });
           change({ stallScroll: false, index: findIndex < 0 ? index : findIndex });
+        }
       }}
       onfocus=${e => change({ open: true })}></Input>
     <Div
@@ -200,23 +210,52 @@ export const SearchInput = props => (state, actions) => {
       position="fixed" top="0px" bottom="0px" right="0px" left="0px" index="1200"></Div>
     <Div position="relative"><Div
       position="absolute"
-      width="100%"
       index="13000"
       overflowX="hidden"
       onupdate=${elm => input.stallScroll ? null : (elm.scrollTop = (38 * index) || 0)}
       id=${`${props.id}_options`}
       hide=${input.open ? '0' : '1'}
       overflow="scroll"
-      maxHeight="250px">
-      ${filtered.map((value, i) => html`<Div
+      ${assign({ width: '200px', align: 'left', maxHeight: '250px' }, props.options)}>
+      ${list.map((value, i) => html`<Div
           id=${`${props.id}_${i}`}
           data-num=${`${i}`}
+          notSelectable
           hoverBackground=${'#F1F1F1'}
           p="10px"
           onclick=${e => change({ index: i, value, open: false })}
-          background=${i === index ? 'red' : 'white'}>${value}</Div>`)}
+          background=${i === index ? 'red' : 'white'}>${(props.option || option)(value)}</Div>`)}
     </Div></DIv>
   </Div>`;
+}
+
+export const DatePicker = props => (state, actions) => {
+  const input = selectInput(state, props.id) || {},
+    change = obj => actions.inputs.change({ id: props.id, obj });
+
+  return html`
+    <Div flex="column">
+      <Input id=${props.id} placeholder="mm/dd/yy" onfocus=${e => change({ open: true })} b="1"></Input>
+      <Div position="relative">
+        <Div
+          hide=${input.open ? '0' : '1'}
+          onclick=${e => change({ open: false })}
+          position="fixed" top="0px"
+          bottom="0px" right="0px"
+          left="0px" index="11000"></Div>
+        <Div
+          flex="column"
+          align="center"
+          width="300px" height="300px" background="white" border="1px solid #F1F1F1"
+          hide=${input.open ? '0' : '1'} position="absolute" index="14000" >
+          <Div b="1" mt="20px">Select a day</Div>
+          <Div>
+            ${days.map(v => html`<Div>${v}</Div>`)}
+          </Div>
+        </Div>
+      </Div>
+    </Div>
+  `;
 }
 
 export const Textarea = props => (state, actions, d = nameData(props.id)) => html`<TextareaInner

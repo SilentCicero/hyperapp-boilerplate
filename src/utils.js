@@ -158,6 +158,20 @@ const isOnline = callback => callInterval(e => getip()
   .then(online => online === true ? callback(true) : callback(false))
   .catch(e => null), 10000);
 
+const embed = opts => ({
+  tag: 'div',
+  children: [],
+  data: {
+    key: opts.key,
+    oncreate: el => setTimeout(_ => {
+      const fakeRoot = document.createElement('div')
+      opts.root = fakeRoot
+      app(opts)
+      el.parentNode.replaceChild(fakeRoot.childNodes[0], el)
+    })
+  }
+});
+
 module.exports = {
   years,
   months,

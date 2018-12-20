@@ -101,6 +101,7 @@ const divInsideProps = props => {
     ${props.weight ? `font-weight: ${props.weight};` : ''}
     ${props.s ? `font-size: ${props.s};` : ''}
     ${props.index ? `z-index: ${props.index};` : ''}
+    ${props.wrap ? `flex-wrap: ${props.wrap};` : ''}
 
     &:focus {
       ${props.focusShadow ? `box-shadow: ${props.focusShadow};` : ''}

@@ -4,9 +4,13 @@ const {
   days,
   months,
   years,
+  minutes,
+  hours,
+  monthNames,
 } = require('../utils');
 const { Input, SearchInput, Textarea, selectInput, required, maxLength } = require('../components/Input');
 const { Div, Meta, Span } = require('../components');
+const { DatePicker } = require('../components/DatePicker');
 
 export const DefaultView = props => (state, actions) => {
   return html`
@@ -14,6 +18,8 @@ export const DefaultView = props => (state, actions) => {
       <Meta title="BookThatClass"></Meta>
 
       Hello world!!!!
+
+      <DatePicker id="dateTime"></DatePicker>
 
       <Input
         mt="40px"
@@ -24,10 +30,19 @@ export const DefaultView = props => (state, actions) => {
         warn=${e => [ maxLength(10) ]}
         placeholder="hello"></Input>
 
-      <Div flex="row">
-        <SearchInput type="number" id="day" strict list=${() => days}></SearchInput>
-        <SearchInput type="number" id="month" strict list=${() => months.map(v => v + 1)}></SearchInput>
-        <SearchInput type="number" id="year" defaultValue="1992" strict list=${() => years} default="1992"></SearchInput>
+        <br /><br />
+
+          <h3>Date</h3>
+
+      <Div flex="row" align="center" border="1px solid lightgray;">
+        <SearchInput next="month" min="0" border="0px" p="15px" width="30px" type="number" id="year" placeholder="yyyy" strict list=${() => years}></SearchInput>
+        <SearchInput next="day" min="0" border="0px" p="15px" width="30px" options=${{ width: '200px' }} type="number" id="month" placeholder="mm"
+          option=${v => `${v} ${monthNames[v - 1]}`}
+          strict list=${() => months.map(v => v + 1)}></SearchInput>
+        <SearchInput next="minutes" min="0" border="0px" p="15px" width="30px" type="number" id="day" placeholder="dd" strict list=${() => days}></SearchInput>
+        <SearchInput next="hours" min="0" border="0px" p="15px" width="30px" type="number" id="minutes" placeholder="hh" strict list=${() => hours}></SearchInput>
+        :
+        <SearchInput min="0" border="0px" p="15px" width="30px" type="number" id="hours" placeholder="mm" strict list=${() => minutes}></SearchInput>
       </Div>
 
       Value: ${selectInput(state, 'login.name').value}
