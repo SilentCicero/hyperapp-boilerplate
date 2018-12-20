@@ -99,7 +99,7 @@ const years = Array(130).fill(0).map((e, i) => (i + 1) + 1900);
 const months = Array(12).fill(0).map((e, i) => i);
 const days = Array(31).fill(0).map((e, i) => i + 1);
 const hours = Array(12).fill(0).map((e, i) => i + 1);
-const minutes = Array(60).fill(0).map((e, i) => i + 1);
+const minutes = [0].concat(Array(60).fill(0).map((e, i) => i + 1));
 const basicMinutes = [0,5,10,15,20,25,30,35,40,45,50,55,59];
 const daysOfWeek = ['mon', 'tue', 'wed', 'thur', 'fri', 'sat', 'sun'];
 const ampm = ['am', 'pm'];
