@@ -16,6 +16,13 @@ const divInsideProps = props => {
       display: flex;
       flex-direction: ${props.flex};
     ` : '')}
+
+    ${(props.hide && props.box && (String(props.hide) === "true" || String(props.hide) === "1")) ? 'display: none;' : (props.box && !props.flex ? `
+      display: flex;
+      flex-direction: ${props.box.split(' ')[0]};
+      justify-content: ${props.box.split(' ')[1] || 'initial'};
+      align-items: ${props.box.split(' ')[2] || 'initial'};
+    ` : '')}
     ${(props.show === "1" || props.show === "true") ? (props.flex ? '' : `display: block;`) : ''}
 
     ${props.justify ? `
@@ -76,6 +83,7 @@ const divInsideProps = props => {
 
     ${props.unit ? `flex: ${props.unit};` : ''}
     ${props.pointer ? `cursor: pointer;` : ''}
+    ${props.cursor ? `cursor: ${props.cursor};` : ''}
     ${props.opacity ? `opacity: ${props.opacity};` : ''}
     ${props.ellipsis ? `white-space: nowrap; text-overflow: ellipsis;` : ''}
     ${props.overflow ? `overflow: ${props.overflow};` : ''}

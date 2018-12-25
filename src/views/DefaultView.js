@@ -21,7 +21,6 @@ export const DefaultView = props => (state, actions) => {
       <Div width="300px">
         <DatePicker id="dateTime" p="20px"></DatePicker>
       </Div>
-
     </Div>
   `;
 }

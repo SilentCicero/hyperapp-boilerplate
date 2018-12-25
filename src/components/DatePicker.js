@@ -30,8 +30,7 @@ const Blur = props => html`<Div ${props} position="fixed"
 const titles = input => ['Select a year', 'Select the month', 'Select the day', 'Select the hour', 'Select the minute', 'Select the time of day'];
 const Box = props => html`<Div
   ${assign({}, props, { children: undefined })}
-  flex="column"
-  align="center"
+  box="column initial center"
   overflow="hidden"
   position="relative"
   mt="-1px"
@@ -57,16 +56,12 @@ const InnerBox = props => html`<Div
 const Content = props => html`<Div
     ${assign({}, props, { children: undefined })}
     wrap="wrap"
-    flex="row"
-    justify="center"
-    align="center">
+    box="row center center">
     ${props.children}
   </Div>`;
 const Item = props => html`<Div
     ${assign({}, props, { children: undefined })}
-    flex="row"
-    align="center"
-    justify="center"
+    box="row center center"
     p="10px"
     pointer
     hoverBackground="gray">
@@ -75,7 +70,7 @@ const Item = props => html`<Div
 const zeroPad2 = v => defined(v) ? zeroPad(v) : v;
 const overlayItem = (props, v) => ({
   onclick: props.goto(v),
-  color: props.stage === v && props.input.open ? props.highlight : '',
+  color: props.stage === v && props.input.open ? props.colors.highlight : '',
 });
 const Overlay = props => html`<Div
     position="absolute"
@@ -83,13 +78,12 @@ const Overlay = props => html`<Div
     index="10000"
     height="100%"
     width="100%"
-    flex="row"
-    color=${props.input.open || props.input.touched ? props.dark : props.light}
+    box="row center center"
+    cursor="text"
+    color=${props.input.open || props.input.touched ? props.colors.dark : props.colors.light}
     bottom="0px"
-    align="center"
     right="0px"
-    left="0px"
-    justify="center">
+    left="0px">
     <Div ${overlayItem(props, 0)}>${props.getData(0) || 'yyyy'}</Div>
     <Div ${overlayItem(props, 1)}>-${zeroPad2(props.getData(1)) || 'mm'}</Div>
     <Div ${overlayItem(props, 2)}>-${zeroPad2(props.getData(2)) || 'dd'}</Div>
@@ -112,21 +106,21 @@ const constrain = stage => [
   minute => constrainInt(minute, 2, 0, 59),
   ampm => (lower(ampm) !== 'am' && lower(ampm) !== 'pm') ? 'pm' : ampm,
 ][stage];
+const buildDate = i => new Date(i[0] || 1900, int(i[1] || 1) - 1, i[2] || 1, i[3] || 1, i[4] || 0);
 
 export const DatePicker = props => (state, actions) => {
   const input = selectInput(state, props.id) || {},
     change = obj => actions.inputs.change({ id: props.id, obj }),
     stage = input.stage,
     completed = input.completed || 0,
-    highlight = props.highlight || 'salmon',
-    light = props.light || 'lightgray',
-    dark = props.dark || 'gray',
+    current = buildDate(input),
+    colors = assign({}, props.colors || { highlight: 'salmon', light: 'lightgray', dark: 'gray' }),
     getData = stg => (stg === stage ? input.value : undefined) || (input || {})[stg],
     width = int(noPx(props.boxWidth)) || 300,
     height = int(noPx(props.boxHeight)) || 300,
     onfocus = e => change({ stage: stage || 0, open: true }),
     goto = (stg, nStg = (stg > 5 ? 0 : stg)) => e => {
-      if (input[stage] && nStg <= completed + 1)
+      if (input[stg - 1 < 0 ? 0 : stg - 1] && nStg <= completed + 1)
         change({ stage: nStg, completed: (stg <= completed ? completed : stg), value: '' });
     },
     oninput = e => change({
@@ -141,10 +135,11 @@ export const DatePicker = props => (state, actions) => {
     <Div flex="column">
       <Div flex="column" position="relative" width="100%">
         <Input ${assign(props, { onfocus, onkeydown, oninput })} color="rgba(0,0,0,0)"></Input>
-        <Overlay ${{ input, stage, dark, light, highlight, goto, getData, onclick: e => focus(props.id) }}></Overlay>
+        <Overlay ${{ input, stage, colors, goto, getData, onclick: e => focus(props.id) }}></Overlay>
       </Div>
       <Blur hide=${intBool(input.open)} onclick=${e => change({ open: false })}></Blur>
       <Box hide=${intBool(input.open)} width=${px(width)} height=${px(height)} onclick=${e => focus(props.id)}>
+        ${current.toISOString()}
         <Header>${(props.titles || titles)(input)[stage] || ''}</Header>
         <InnerBox ${{ stage, width }}>
           <Content ${{ width: px(width) }}>Years</Content>
