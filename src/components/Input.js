@@ -160,7 +160,7 @@ export const Input = props => (state, actions, d = nameData(props.id)) => html`<
     ${assign({}, props, { value: undefined, oninput: undefined, onupdate: undefined, oncreate: undefined, onfocus: undefined })}
     oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)())}
     onupdate=${(e, o) => noop(actions.inputs.update({ elm: e, old: o, props }), (props.onupdate || noop)())}
-    value=${((state.inputs[d.form] || {})[d.id] || {}).value}
+    value=${props.value || ((state.inputs[d.form] || {})[d.id] || {}).value}
     onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
     oninput=${e => noop(actions.inputs.input(e), (props.oninput || noop)(e))}></InputInner>`;
 
@@ -229,39 +229,10 @@ export const SearchInput = props => (state, actions) => {
   </Div>`;
 }
 
-export const DatePicker = props => (state, actions) => {
-  const input = selectInput(state, props.id) || {},
-    change = obj => actions.inputs.change({ id: props.id, obj });
-
-  return html`
-    <Div flex="column">
-      <Input id=${props.id} placeholder="mm/dd/yy" onfocus=${e => change({ open: true })} b="1"></Input>
-      <Div position="relative">
-        <Div
-          hide=${input.open ? '0' : '1'}
-          onclick=${e => change({ open: false })}
-          position="fixed" top="0px"
-          bottom="0px" right="0px"
-          left="0px" index="11000"></Div>
-        <Div
-          flex="column"
-          align="center"
-          width="300px" height="300px" background="white" border="1px solid #F1F1F1"
-          hide=${input.open ? '0' : '1'} position="absolute" index="14000" >
-          <Div b="1" mt="20px">Select a day</Div>
-          <Div>
-            ${days.map(v => html`<Div>${v}</Div>`)}
-          </Div>
-        </Div>
-      </Div>
-    </Div>
-  `;
-}
-
 export const Textarea = props => (state, actions, d = nameData(props.id)) => html`<TextareaInner
     ${assign({}, props, { value: undefined, oninput: undefined, onupdate: undefined, oncreate: undefined, onfocus: undefined })}
     oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)())}
     onupdate=${(e, o) => noop(actions.inputs.update({ elm: e, old: o, props }), (props.onupdate || noop)())}
-    value=${((state.inputs[d.form] || {})[d.id] || {}).value}
+    value=${props.value || ((state.inputs[d.form] || {})[d.id] || {}).value}
     onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
     oninput=${e => noop(actions.inputs.input(e), (props.oninput || noop)(e))}></TextareaInner>`;

@@ -103,6 +103,14 @@ const divInsideProps = props => {
     ${props.index ? `z-index: ${props.index};` : ''}
     ${props.wrap ? `flex-wrap: ${props.wrap};` : ''}
 
+    ${props.transition ? `
+      -webkit-transition: ${props.transition};
+      -moz-transition: ${props.transition};
+      -o-transition: ${props.transition};
+      -ms-transition: ${props.transition};
+      transition: ${props.transition};
+      ` : ''}
+
     &:focus {
       ${props.focusShadow ? `box-shadow: ${props.focusShadow};` : ''}
       ${props.focusBorder ? `border: ${props.focusBorder}; ` : ''}

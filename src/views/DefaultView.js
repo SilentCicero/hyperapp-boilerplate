@@ -17,9 +17,16 @@ export const DefaultView = props => (state, actions) => {
     <Div mt="100px" ml="100px">
       <Meta title="BookThatClass"></Meta>
 
-      Hello world!!!!
+      Registration Opens:
+      <Div width="300px">
+        <DatePicker id="dateTime" p="20px"></DatePicker>
+      </Div>
 
-      <DatePicker id="dateTime"></DatePicker>
+    </Div>
+  `;
+}
+
+/*
 
       <Input
         mt="40px"
@@ -74,7 +81,4 @@ export const DefaultView = props => (state, actions) => {
 
       ${state.environment.name}
       ${state.environment.online ? '' : 'Your Offline'}
-      ${state.environment.browser === 'ie' && state.environment.versionInt < 11 ? 'Your browser is out of date..' : ''}
-    </Div>
-  `;
-}
+      ${state.environment.browser === 'ie' && state.environment.versionInt < 11 ? 'Your browser is out of date..' : ''}*/

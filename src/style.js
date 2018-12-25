@@ -21,6 +21,10 @@ styled.injectGlobal`
     vertical-align: baseline;
   }
 
+  body, textarea {
+    font-family: 'Open Sans', sans-serif;
+  }
+
   *{
   outline: none;
   }
