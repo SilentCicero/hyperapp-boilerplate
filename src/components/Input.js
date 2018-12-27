@@ -5,14 +5,18 @@ const {
   noop,
   assign,
   byid,
+  styled,
+  lower,
+  ObjectRemove,
 } = require('../utils');
 const components = require('./index');
 const InputInner = components.Input;
 const TextareaInner = components.Textarea;
+const InnerSelect = components.Select;
 const Div = components.Div;
 const selectForm = id => String(id).split('.')[0];
 const selectId = id => String(id).split('.')[1] || String(id).split('.')[0];
-const nameData = id => ({ id: selectId(id), form: selectForm(id) });
+const nameData = id => ({ id: selectId(expectDefined(id)), form: selectForm(id) });
 
 export const required = value => (value || typeof value === 'number' ? undefined : 'Required');
 export const maxLength = max => value =>
@@ -56,6 +60,10 @@ export const validators = {
 export const warnings = {
 };
 
+const expectDefined = v => {
+  if (typeof v !== 'undefined') return v;
+  throw new Error('Input id is expected!');
+}
 export const state = {
 };
 export const actions = {
@@ -65,20 +73,20 @@ export const actions = {
     }),
   }),
   create: props => (state, actions) => {
-    actions.change({ id: props.id, obj: {
+    actions.change({ id: expectDefined(props.id), obj: {
       touched: false,
       error: null,
-      value: props.defaultValue || '',
+      value: props.defaultChecked ? true : (props.defaultValue || ''),
       defaultValue: props.defaultValue,
     }});
     validators[props.id] = props.validate;
     warnings[props.id] = props.warn;
   },
   update: ({ elm, old, props }) => (state, actions) => {
-    if(elm.id !== old.id) actions.change({ id: elm.id, obj: {
+    if(elm.id !== old.id) actions.change({ id: expectDefined(elm.id), obj: {
         touched: false,
         error: null,
-        value: elm.defaultValue,
+        value: props.defaultChecked ? true : elm.defaultValue,
         defaultValue: elm.defaultValue,
       }});
 
@@ -138,12 +146,12 @@ export const actions = {
   },
   input: e => async (state, actions) => {
     actions.change({ id: e.target.id, obj: {
-      value: e.target.value,
+      value: includeCheckedValue(e),
       error: null,
     }});
     const warns = warnings[e.target.id] ? warnings[e.target.id]() : [];
     for (var i = 0; i < warns.length; i++) {
-      const raw = warns[i](e.target.value);
+      const raw = warns[i](includeCheckedValue(e));
       const result = await ((raw || {}).then ? raw : Promise.resolve(raw));
 
       if (result) return actions.change({ id: e.target.id, obj: {
@@ -155,9 +163,11 @@ export const actions = {
     }});
   },
 };
+const includeCheckedValue = e => lower(e.target.type) === 'checkbox' ? (e.target.checked || false) : e.target.value;
+const overrides = ['value', 'oninput', 'onupdate', 'oncreate', 'onfocus'];
 
 export const Input = props => (state, actions, d = nameData(props.id)) => html`<InputInner
-    ${assign({}, props, { value: undefined, oninput: undefined, onupdate: undefined, oncreate: undefined, onfocus: undefined })}
+    ${ObjectRemove(props, ...overrides)}
     oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)())}
     onupdate=${(e, o) => noop(actions.inputs.update({ elm: e, old: o, props }), (props.onupdate || noop)())}
     value=${props.value || ((state.inputs[d.form] || {})[d.id] || {}).value}
@@ -229,10 +239,29 @@ export const SearchInput = props => (state, actions) => {
   </Div>`;
 }
 
+export const Select = props => (state, actions, d = nameData(props.id)) => html`<InnerSelect
+  ${ObjectRemove(props, ...overrides)}
+  oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)(e))}
+  onupdate=${(elm, old) => noop(actions.inputs.update({ elm, old, props }), (props.onupdate || noop)(elm, old))}
+  onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
+  onchange=${e => noop(actions.inputs.input(e), (props.onchange || noop)(e))}>
+  ${(props.list || []).map(v => html`
+    <option value=${v[0]} ${v[0] === (props.value || ((state.inputs[d.form] || {})[d.id] || {}).value) ? { selected: 'selected' } : {}}>${v[1]}</option>
+  `)}
+</InnerSelect>`;
+
+export const Checkbox = props => (state, actions, d = nameData(props.id)) => html`<InputInner type="checkbox"
+  ${ObjectRemove(props, ...overrides)}
+  oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)(e))}
+  onupdate=${(elm, old) => noop(actions.inputs.update({ elm, old, props }), (props.onupdate || noop)(elm, old))}
+  onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
+  onchange=${e => noop(actions.inputs.input(e), (props.onchange || noop)(e))}></InputInner>`;
+
 export const Textarea = props => (state, actions, d = nameData(props.id)) => html`<TextareaInner
-    ${assign({}, props, { value: undefined, oninput: undefined, onupdate: undefined, oncreate: undefined, onfocus: undefined })}
-    oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)())}
-    onupdate=${(e, o) => noop(actions.inputs.update({ elm: e, old: o, props }), (props.onupdate || noop)())}
+    ${ObjectRemove(props, ...overrides)}
+    oncreate=${e => noop(actions.inputs.create(props), (props.oncreate || noop)(e))}
+    onupdate=${(e, o) => noop(actions.inputs.update({ elm: e, old: o, props }), (props.onupdate || noop)(e, o))}
     value=${props.value || ((state.inputs[d.form] || {})[d.id] || {}).value}
+    ${(!(state.inputs[d.form] || {})[d.id] || {}).touched && props.defaultChecked ? { checked: 'checked' } : {}}
     onfocus=${e => noop(actions.inputs.touch(e), (props.onfocus || noop)(e))}
-    oninput=${e => noop(actions.inputs.input(e), (props.oninput || noop)(e))}></TextareaInner>`;
+    onchange=${e => noop(actions.inputs.input(e), (props.oninput || noop)(e))}></TextareaInner>`;

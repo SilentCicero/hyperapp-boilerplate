@@ -172,7 +172,38 @@ const embed = opts => ({
   }
 });
 
+
+const defined = v => typeof v !== "undefined";
+const int = v => parseInt(noPx(v), 10);
+const monthOffset = (year, month) => (new Date(int(year) || 2018, int(month) || 0, 1)).getDay();
+const str = v => String(v);
+const lim = (v, limit) => str(v).slice(0, limit);
+const lower = v => str(v).toLowerCase();
+const onlyNum = (val, charLen) => lim(val, charLen || str(val).length).replace(/\D/g, '');
+const intBool = v => v ? '0' : '1';
+const noPx = v => onlyNum(v);
+const px = v => `${onlyNum(v)}px`;
+const zeroPad2 = v => defined(v) ? zeroPad(v) : v;
+const ampmToNum = v => lower(v) === 'am' ? 0 : (lower(v) === 'pm' ? 1 : int(v));
+
+const ObjectRemove = (o, ...a) => Object.keys(o)
+  .filter(k => a.indexOf(k) === -1)
+  .reduce((acc, k) => assign(acc, { [k]: o[k] }), {});
+
 module.exports = {
+  ObjectRemove,
+  defined,
+  int,
+  monthOffset,
+  str,
+  lim,
+  lower,
+  onlyNum,
+  intBool,
+  noPx,
+  px,
+  zeroPad2,
+  ampmToNum,
   years,
   months,
   days,

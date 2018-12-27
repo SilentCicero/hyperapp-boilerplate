@@ -13,97 +13,28 @@ const {
   noop,
   focus,
   styled,
+  defined,
+  int,
+  monthOffset,
+  str,
+  lim,
+  lower,
+  onlyNum,
+  intBool,
+  noPx,
+  px,
+  zeroPad2,
+  ampmToNum,
+  ObjectRemove,
 } = require('../utils');
 const { Div, Span } = require('./index');
 const { selectInput, Input } = require('./Input');
 
-const defined = v => typeof v !== "undefined";
-const int = v => parseInt(noPx(v), 10);
-const monthOffset = (year, month) => (new Date(int(year) || 2018, int(month) || 0, 1)).getDay();
-const str = v => String(v);
-const lim = (v, limit) => str(v).slice(0, limit);
-const lower = v => str(v).toLowerCase();
-const onlyNum = (val, charLen) => lim(val, charLen || str(val).length).replace(/\D/g, '');
-const intBool = v => v ? '0' : '1';
-const noPx = v => onlyNum(v);
-const px = v => `${v}px`;
-const zeroPad2 = v => defined(v) ? zeroPad(v) : v;
-const ampmToNum = v => lower(v) === 'am' ? 0 : (lower(v) === 'pm' ? 1 : int(v));
-
 const titles = input => ['Select a year', 'Select the month', `${monthNames[int(input[1]) - 1]}, ${input[0]}`, 'Select the hour', 'Select the minute', 'Select the time of day'];
-const Blur = props => html`<Div ${props} position="fixed"
-  top="0px" bottom="0px" right="0px" left="0px" index="9000"></Div>`;
-const Box = props => html`<Div
-  ${assign({}, props, { children: undefined })}
-  box="column initial center"
-  overflow="hidden"
-  position="absolute"
-  mt="2px"
-  notSelectable
-  shadow="0px 3px 15px rgba(0,0,0,0.2)"
-  background="white"
-  border="1px solid #ccc"
-  index="14000"
-  p="20px">${props.children}</Div>`;
-const Header = props => html`<Div ${props} box="row center center" b>${props.children}</Div>`;
-const InnerBox = props => html`<Div
-    flex="row"
-    wrap="no-wrap"
-    position="absolute"
-    pl="inherit" pr="inherit"
-    left=${`-${px(props.stage * props.width)}`}
-    mt="-20px"
-    minHeight=${px(props.height)}
-    transition="left .3s">${props.children}</Div>`;
-const Content = props => html`<Div
-    width=${px(props.width)}
-    box=${props.box || 'row center center'}><Div
-      ${assign({}, props, { children: undefined, p: undefined, width: undefined, height: undefined })}
-      box=${props.box || 'row center center'}
-      wrap="wrap"
-      mt="20px"
-      height=${props.height || 'inherit'}
-      p=${props.p || '20px'}>${props.children}</Div></Div>`;
-const Item = props => html`<Div
-    ${assign({}, props, { children: undefined, p: undefined })}
-    box=${props.box || 'row center center'}
-    minWidth="10px"
-    minHeight="10px"
-    unit=${props.unit || 'default'}
-    p=${props.p || '10px'}
-    pointer
-    onclick=${props.goto(int(props.stage) + 1, props.last === true ? false : true, props.value)}
-    background=${ampmToNum(props.input[props.stage]) === ampmToNum(props.value) ? props.colors.highlight : ''}
-    hoverBackground=${props.colors.light}>${props.children}</Div>`;
+
 const blink = styled.keyframes`
-  50% { opacity: 0.8; }
+  50% { color: INDIANRED; }
 `;
-const overlayItem = (props, v) => (assign({
-  onclick: props.goto(v, true) }, props.stage === v && props.input.open ? {
-  color: props.colors.highlight,
-  animation: `${blink} 1s step-start 0s infinite`,
-} : {}));
-const Overlay = props => html`<Div
-    ${assign({}, props, { colors: undefined, input: undefined, getData: undefined, stage: undefined, goto: undefined })}
-    box="row center center"
-    position="absolute"
-    index="10000"
-    height="100%"
-    cursor="text"
-    color=${props.input.open || props.input.touched ? props.colors.dark : props.colors.light}>
-    ${props.input.touched && !props.input.open && props.input[0] && props.input[1] && props.input[2] ? html`
-      <Div onclick=${props.goto(0, true)}>${cap(daysOfWeek[props.date.getDay()].slice(0, 3))} ${cap(monthNames[int(props.input[1]) - 1]).slice(0, 3)} ${props.input[2]}, ${str(props.input[0]).slice(2, 4)}'</Div>
-    ` : (props.onlyTime ? '' : html`<Div box="row center center">
-      <Div ${overlayItem(props, 0)}>${(props.input.touched ? props.getData(0) : undefined) || 'yyyy'}</Div>
-      <Div ${overlayItem(props, 1)}>-${(props.input.touched ? zeroPad2(props.getData(1)) : undefined) || 'mm'}</Div>
-      <Div ${overlayItem(props, 2)}>-${(props.input.touched ? zeroPad2(props.getData(2)) : undefined) || 'dd'}</Div>
-    </Div>`)}
-    ${props.onlyDate ? '' : html`<Div flex="row" ml=${props.onlyTime ? '0px' : '20px'}>
-      <Div ${overlayItem(props, 3)}>${props.getData(3) || 'hh'}</Div>
-      :<Div ${overlayItem(props, 4)}>${zeroPad2(props.getData(4)) || 'mm'}</Div>
-      <Div  ${overlayItem(props, 5)}>${props.getData(5) || (props.stage === 4 || props.stage === 5 ? '--' : '')}</Div>
-    </Div>`}
-  </Div>`;
 const constrainInt = (v, len, min = 0, max, num = onlyNum(v === '' ? 0 : v, len)) => {
   return (num < min) ? undefined : (num > max ? max : num);
 };
@@ -122,7 +53,10 @@ const buildDate = (i = {}, o = {}, n = assign(i, o)) => new Date(
   int((n[3] || 1)) + (n[5] === "pm" ? 12 : 0), // hour
   n[4] || 0); // minute
 const minMax = (v, min, max) => int(v) > max ? min : (int(v) < min ? max : int(v));
-const dateToDefaults = d => ({ [0]: d[0], [1]: d[1], [2]: d[2], [3]: d[3], [4]: d[4] });
+const dateToDefaults = d => d;
+const codeMap = (input, code) => (code === 37 ? -1 : (code === 39 ? 1 : [
+  5, 3, 7, 4, 4, 1
+][input.stage] * (code === 40 ? 1 : -1))) * (input.stage === 4 ? 5 : 1) - (input.stage === 4 && int(input[4]) === 59 ? 4 : 0);
 
 export const DatePicker = props => (state, actions) => {
   const input = assign({}, props.default ? dateToDefaults(props.default()) : {}, selectInput(state, props.id) || {}),
@@ -131,6 +65,8 @@ export const DatePicker = props => (state, actions) => {
     maxStage = props.onlyDate ? 2 : 5,
     stage = (!defined(input.stage) ? int(props.stage) : input.stage) || minStage,
     completed = input.completed || int(props.stage) || minStage,
+    filters = props.filters || {},
+    filter = v => (filters[stage] || (() => true))(v),
     date = buildDate(input),
     len = stage === 0 ? 4 : 2,
     colors = assign({}, props.colors || { highlight: 'salmon', light: 'gray', dark: 'black' }),
@@ -146,28 +82,110 @@ export const DatePicker = props => (state, actions) => {
       value: (stage === 5 ? lim : onlyNum)(e.target.value, len),
       [stage]: constrain(stage)(e.target.value) }),
     onkeydown = (e, code = e.keyCode) => {
-      if ([9, 13, 39, 37].indexOf(code) !== -1)
-        noop(goto(stage + (code === 37 ? -1 : 1), stage < maxStage ? e.preventDefault() || true : false)());
-    };
+      if ([9, 13].indexOf(code) !== -1) // tab and enter
+        noop(goto(stage + 1, stage < maxStage ? e.preventDefault() || true : false)());
+      if ([37, 38, 39, 40].indexOf(code) !== -1) // arrow keys
+        change({ [stage]: constrain(stage)(int(defined(input[stage]) ? input[stage] : 0) + codeMap(input, code))});
+    },
+    Blur = blurProps => html`<Div
+      onclick=${e => change({ open: false })}
+      position="fixed"
+      top="0px"
+      bottom="0px"
+      right="0px"
+      left="0px"
+      index="9000"></Div>`,
+    Box = boxProps => html`<Div
+      width=${px(width)}
+      height=${px(height)}
+      onclick=${e => (stage === maxStage ? noop : focus)(props.id)}
+      box="column initial center"
+      overflow="hidden"
+      position="absolute"
+      mt="2px"
+      notSelectable
+      shadow="0px 3px 15px rgba(0,0,0,0.2)"
+      background="white"
+      border="1px solid #ccc"
+      index="14000"
+      p="20px">${boxProps.children}</Div>`,
+    Header = headerProps => html`<Div box="row center center" b>${headerProps.children}</Div>`,
+    InnerBox = innerBoxProps => html`<Div
+        flex="row"
+        wrap="no-wrap"
+        position="absolute"
+        pl="inherit" pr="inherit"
+        left=${`-${px(stage * (width + 20))}`}
+        mt="-20px"
+        minHeight=${px(height)}
+        transition="left .3s">${innerBoxProps.children}</Div>`,
+    Content = contentProps => html`<Div
+        width=${px(contentProps.width)}
+        mr="20px"
+        box=${contentProps.box || 'row center center'}><Div
+        ${contentProps.scrollIt ? { y: 'auto' } : {}}
+        ${ObjectRemove(contentProps, 'children', 'mt', 'p', 'width', 'height')}
+        box=${props.box || 'row center center'}
+        wrap="wrap"
+        mt=${contentProps.mt || '20px'}
+        height=${contentProps.height || 'inherit'}
+        p=${contentProps.p || '20px'}>${contentProps.children}</Div></Div>`,
+    Item = itemProps => html`<Div
+        ${ObjectRemove(itemProps, 'children', 'p')}
+        box=${itemProps.box || 'row center center'}
+        minWidth="10px"
+        minHeight="10px"
+        unit=${itemProps.unit || 'default'}
+        p=${itemProps.p || '10px'}
+        pointer
+        onclick=${goto(int(stage) + 1, itemProps.last === true ? false : true, itemProps.value)}
+        background=${ampmToNum(input[stage]) === ampmToNum(itemProps.value) ? colors.highlight : ''}
+        hoverBackground=${colors.light}>${itemProps.children}</Div>`,
+    SubMessage = () => html`<Div position="absolute" bottom="20px" right="0px" left="0px" textAlign="center" s="12px" color=${colors.light}>Start typing or click...</Div>`,
+    overlayItem = (itemProps, v) => (assign({
+      onclick: goto(v, true) }, stage === v && input.open ? {
+      color: colors.highlight,
+      animation: input[v] ? '' : `${blink} 1s step-start 0s infinite`,
+    } : {})),
+    Overlay = overlayProps => html`<Div
+        onclick=${e => focus(props.id)}
+        box="row center center"
+        position="absolute"
+        index="10000"
+        height="100%"
+        cursor="text"
+        color=${input.open || input.touched ? colors.dark : colors.light}>
+        ${input.touched && !input.open && input[0] && input[1] && input[2] ? html`
+          <Div onclick=${goto(0, true)}>${cap(daysOfWeek[date.getDay()].slice(0, 3))} ${cap(monthNames[int(input[1]) - 1]).slice(0, 3)} ${input[2]}, ${str(input[0]).slice(2, 4)}'</Div>
+        ` : (props.onlyTime ? '' : html`<Div box="row center center">
+          <Div ${overlayItem(props, 0)}>${(input.touched ? getData(0) : undefined) || 'yyyy'}</Div>
+          <Div ${overlayItem(props, 1)}>-${(input.touched ? zeroPad2(getData(1)) : undefined) || 'mm'}</Div>
+          <Div ${overlayItem(props, 2)}>-${(input.touched ? zeroPad2(getData(2)) : undefined) || 'dd'}</Div>
+        </Div>`)}
+        ${props.onlyDate ? '' : html`<Div flex="row" ml=${props.onlyTime ? '0px' : '20px'}>
+          <Div ${overlayItem(props, 3)}>${getData(3) || 'hh'}</Div>
+          :<Div ${overlayItem(props, 4)}>${zeroPad2(getData(4)) || 'mm'}</Div>
+          <Div  ${overlayItem(props, 5)}>${getData(5) || (stage === 4 || stage === 5 ? '--' : '')}</Div>
+        </Div>`}
+      </Div>`;
 
   return html`
     <Div flex="column" inlineFlex>
       <Div box="column center center" inlineFlex position="relative">
-        <Input ${assign(props, { onfocus, onkeydown, oninput })} color="rgba(0,0,0,0)"></Input>
-        <Overlay ${{ input, stage, date, onlyDate: props.onlyDate, onlyTime: props.onlyTime, colors, goto, getData, onclick: e => focus(props.id) }}></Overlay>
+        <Input ${assign(props, { onfocus, onkeydown, oninput, color: 'rgba(0,0,0,0)' })}></Input>
+        <Overlay></Overlay>
       </Div>
       ${input.open ? html`<Div flex="column">
-        <Blur onclick=${e => change({ open: false })}></Blur>
+        <Blur></Blur>
         <Div position="relative">
-          <Box width=${px(width)} height=${px(height)} onclick=${e => (stage === maxStage ? noop : focus)(props.id)}>
-            <Div position="absolute" bottom="20px" right="0px" left="0px" textAlign="center" s="12px" color=${colors.light}>Start typing or click...</Div>
+          <Box>
             <Header>${(props.titles || titles)(input)[stage] || ''}</Header>
             <InnerBox ${{ stage, width, height }}>
-              <Content ${{ width, p: '0px', pt: '0px' }}>${years.filter(v => v > 2017 && v < 2020).map(value => html`<Item
-                ${{ stage, goto, input, colors, value }}>
+              <Content ${{ width, height: '240px', scrollIt: true, p: '0px', mt: '45px' }}>${years.filter(filter)
+                .map(value => html`<Item ${{ value }}>
                 ${value}</Item>`)}</Content>
-              <Content ${{ pt: '60px', width, p: '10px', box: 'row center flex-start' }}>${monthNames.map((value, i) => html`<Item
-                ${{ stage, goto, mt: '10px', width: '24%', input, colors, value: i + 1 }}>
+              <Content ${{ pt: '60px', width, p: '10px', box: 'row center flex-start' }}>${monthNames
+                .map((value, i) => html`<Item ${{ mt: '10px', width: '24%', value: i + 1 }}>
                 ${cap(value)}</Item>`)}</Content>
               <Content ${{ p: '15%', box: 'row flex-start center', width }}>
                 ${['su', 'mo','tu','we','th','fr','sa'].map(v => html`<Div
@@ -178,18 +196,19 @@ export const DatePicker = props => (state, actions) => {
                 ${Array(monthOffset(input[0], int(input[1]) - 1)).fill(0).map(v => html`<Div
                   width="30px" height="30px"></Div>`)}
                 ${days.map(value => html`<Item
-                ${{ stage, goto, input, colors, value, p: '0px', width: '30px', height: '30px', last: maxStage === 3 }}>
+                ${{ value, p: '0px', width: '30px', height: '30px', last: maxStage === 3 }}>
                   ${value}</Item>`)}</Content>
               <Content ${{ p: '20%', pt: '15px', height: '80px', width }}>${hours.map(value => html`<Item
-                ${{ stage, width: '20px', height: '20px', goto, input, colors, value }}>
+                ${{ width: '20px', height: '20px', value }}>
                 ${value}</Item>`)}</Content>
               <Content ${{ p: '22%', pt: "15px", height: '80px', width }}>${basicMinutes.map(value => html`<Item
-                ${{ stage, goto, width: '20px', height: '20px', input, colors, value }}>
+                ${{ width: '20px', height: '20px', value }}>
                 ${value}</Item>`)}</Content>
               <Content ${{ width }}>${['am', 'pm'].map(value => html`<Item
-                ${{ stage, goto, width: '20px', height: '20px', m: '10px', input, colors, value, last: true }}>
+                ${{ width: '20px', height: '20px', m: '10px', value, last: true }}>
                 ${value}</Item>`)}</Content>
             </InnerBox>
+            <SubMessage></SubMessage>
           </Box>
         </Div>
       </Div>` : ''}

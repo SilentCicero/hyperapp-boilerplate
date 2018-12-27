@@ -8,7 +8,7 @@ const {
   hours,
   monthNames,
 } = require('../utils');
-const { Input, SearchInput, Textarea, selectInput, required, maxLength } = require('../components/Input');
+const { Input, SearchInput, Checkbox, Select, Textarea, selectInput, required, maxLength } = require('../components/Input');
 const { Div, Meta, Span } = require('../components');
 const { DatePicker } = require('../components/DatePicker');
 
@@ -17,7 +17,20 @@ export const DefaultView = props => (state, actions) => {
     <Div box="row center center" height="100%" mt="300px" ml="100px">
       <Meta title="BookThatClass"></Meta>
 
-      <DatePicker width="240px" stage="1" default=${e => [2019]} id="dateTime" p="20px"></DatePicker>
+      <DatePicker width="240px" filters=${[v => v > 2017 && v < 2020]} stage="1" id="cal" default=${e => [2019]} p="20px"></DatePicker>
+
+      <Select p="20px" id="cool" list=${monthNames.map(v => [v, v])} value=${'October'}></Select>
+
+      <Checkbox p="10px" id="yep" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep1" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep2" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep3" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep4" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep5" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep6" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep7" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="yep8" value="nick" defaultChecked></Checkbox>
+      <Checkbox id="8yep" value="nick" defaultChecked></Checkbox>
     </Div>
   `;
 }
@@ -33,9 +46,9 @@ export const DefaultView = props => (state, actions) => {
         warn=${e => [ maxLength(10) ]}
         placeholder="hello"></Input>
 
-        <br /><br />
+      <br /><br />
 
-          <h3>Date</h3>
+      <h3>Date</h3>
 
       <Div flex="row" align="center" border="1px solid lightgray;">
         <SearchInput next="month" min="0" border="0px" p="15px" width="30px" type="number" id="year" placeholder="yyyy" strict list=${() => years}></SearchInput>

@@ -115,6 +115,7 @@ const divInsideProps = props => {
     ${props.index ? `z-index: ${props.index};` : ''}
     ${props.wrap ? `flex-wrap: ${props.wrap};` : ''}
     ${props.shrink ? `flex-shrink: ${props.shrink};` : ''}
+    ${props.y ? `overflow-y: ${props.y}` : ''}
 
     ${props.transition ? `
       -webkit-transition: ${props.transition};
@@ -165,6 +166,9 @@ export const Button = styled.button`
   ${props => mediaProps(props, divInsideProps)}
 `;
 export const Input = styled.input`
+  ${props => mediaProps(props, divInsideProps)}
+`;
+export const Select = styled.select`
   ${props => mediaProps(props, divInsideProps)}
 `;
 export const Textarea = styled.textarea`
