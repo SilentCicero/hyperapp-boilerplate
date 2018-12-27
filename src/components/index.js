@@ -23,6 +23,7 @@ const divInsideProps = props => {
       justify-content: ${props.box.split(' ')[1] || 'initial'};
       align-items: ${props.box.split(' ')[2] || 'initial'};
     ` : '')}
+    ${props.inlineFlex ? `display: inline-flex;` : ''}
     ${(props.show === "1" || props.show === "true") ? (props.flex ? '' : `display: block;`) : ''}
 
     ${props.justify ? `
@@ -33,6 +34,9 @@ const divInsideProps = props => {
     ` : ''}
     ${props.minWidth ? `
       min-width: ${props.minWidth};
+    ` : ''}
+    ${props.minHeight ? `
+      min-height: ${props.minHeight};
     ` : ''}
     ${props.maxHeight ? `
       max-height: ${props.maxHeight};
@@ -110,6 +114,7 @@ const divInsideProps = props => {
     ${props.s ? `font-size: ${props.s};` : ''}
     ${props.index ? `z-index: ${props.index};` : ''}
     ${props.wrap ? `flex-wrap: ${props.wrap};` : ''}
+    ${props.shrink ? `flex-shrink: ${props.shrink};` : ''}
 
     ${props.transition ? `
       -webkit-transition: ${props.transition};
@@ -118,6 +123,11 @@ const divInsideProps = props => {
       -ms-transition: ${props.transition};
       transition: ${props.transition};
       ` : ''}
+    ${props.animation ? `
+      -webkit-animation: ${props.animation};
+      -moz-animation: ${props.animation};
+      animation: ${props.animation};
+    ` : ''}
 
     &:focus {
       ${props.focusShadow ? `box-shadow: ${props.focusShadow};` : ''}

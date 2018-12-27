@@ -14,13 +14,10 @@ const { DatePicker } = require('../components/DatePicker');
 
 export const DefaultView = props => (state, actions) => {
   return html`
-    <Div mt="100px" ml="100px">
+    <Div box="row center center" height="100%" mt="300px" ml="100px">
       <Meta title="BookThatClass"></Meta>
 
-      Registration Opens:
-      <Div width="300px">
-        <DatePicker id="dateTime" p="20px"></DatePicker>
-      </Div>
+      <DatePicker width="240px" stage="1" default=${e => [2019]} id="dateTime" p="20px"></DatePicker>
     </Div>
   `;
 }
