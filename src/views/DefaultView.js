@@ -17,7 +17,10 @@ export const DefaultView = props => (state, actions) => {
     <Div box="row center center" height="100%" mt="300px" ml="100px">
       <Meta title="BookThatClass"></Meta>
 
-      <DatePicker width="240px" filters=${[v => v > 2017 && v < 2020]} stage="1" id="cal" default=${e => [2019]} p="20px"></DatePicker>
+      <DatePicker width="240px" filters=${[v => v > 2017 && v < 2020]}
+        minDate=${e => new Date()}
+        default=${e => new Date(2019, 7, 10)}
+        stage="1" id="cal" p="20px"></DatePicker>
 
       <Select p="20px" id="cool" list=${monthNames.map(v => [v, v])} value=${'October'}></Select>
 

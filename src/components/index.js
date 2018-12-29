@@ -116,6 +116,12 @@ const divInsideProps = props => {
     ${props.wrap ? `flex-wrap: ${props.wrap};` : ''}
     ${props.shrink ? `flex-shrink: ${props.shrink};` : ''}
     ${props.y ? `overflow-y: ${props.y}` : ''}
+    ${props.all ? `
+      left: ${props.all};
+      top: ${props.all};
+      bottom: ${props.all};
+      right: ${props.all};
+    ` : ''}
 
     ${props.transition ? `
       -webkit-transition: ${props.transition};
@@ -143,22 +149,26 @@ const divInsideProps = props => {
     }
   `;
 };
-export const mediaProps = (props, method) => `
-  ${method(ObjectMap(props, (k, v) => String(v).split('|')[0]))}
+export const mediaProps = (props, method) => {
+  const propKeys = Object.keys(props);
 
-  @media only screen and (max-width:1200px) {
-    ${method(ObjectMap(props, (k, v) => String(v).split('|')[2]))}
-  }
+  return `
+    ${method(ObjectMap(props, (k, v, propKeys) => String(v).split('|')[0]))}
 
-  @media only screen and (max-width:640px) {
-    ${method(ObjectMap(props, (k, v) => String(v).split('|')[1]))}
-  }
+    @media only screen and (max-width:1200px) {
+      ${method(ObjectMap(props, (k, v, propKeys) => String(v).split('|')[2]))}
+    }
 
-  @media print {
-    ${props.noPrint ? 'display: none;' : ''}
-    ${method(ObjectMap(props, (k, v) => String(v).split('|')[3]))}
-  }
-`;
+    @media only screen and (max-width:640px) {
+      ${method(ObjectMap(props, (k, v, propKeys) => String(v).split('|')[1]))}
+    }
+
+    @media print {
+      ${props.noPrint ? 'display: none;' : ''}
+      ${method(ObjectMap(props, (k, v, propKeys) => String(v).split('|')[3]))}
+    }
+  `;
+}
 export const Div = styled.div`
   ${props => mediaProps(props, divInsideProps)}
 `;

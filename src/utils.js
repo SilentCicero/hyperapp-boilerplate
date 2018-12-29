@@ -174,7 +174,7 @@ const embed = opts => ({
 
 
 const defined = v => typeof v !== "undefined";
-const int = v => parseInt(noPx(v), 10);
+const int = v => parseInt(onlyNum(v), 10);
 const monthOffset = (year, month) => (new Date(int(year) || 2018, int(month) || 0, 1)).getDay();
 const str = v => String(v);
 const lim = (v, limit) => str(v).slice(0, limit);

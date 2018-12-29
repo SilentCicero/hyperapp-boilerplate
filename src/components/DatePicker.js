@@ -46,14 +46,21 @@ const constrain = stage => [
   minute => constrainInt(minute, 2, 0, 59),
   ampm => (lower(ampm) !== 'am' && lower(ampm) !== 'pm') ? 'pm' : lower(ampm),
 ][stage];
-const buildDate = (i = {}, o = {}, n = assign(i, o)) => new Date(
+const buildDate = (i, o, n = assign(i || {}, o || {})) => new Date(
   n[0] || 1900, // year
   int(n[1] || 1) - 1, // month
   n[2] || 1, // day
   int((n[3] || 1)) + (n[5] === "pm" ? 12 : 0), // hour
   n[4] || 0); // minute
 const minMax = (v, min, max) => int(v) > max ? min : (int(v) < min ? max : int(v));
-const dateToDefaults = d => d;
+const dateToDefaults = d => ({
+  [0]: d.getFullYear(),
+  [1]: d.getMonth(),
+  [2]: d.getDate(),
+  [3]: d.getHours() > 12 ? d.getHours() - 12 : d.getHours(),
+  [4]: d.getMinutes(),
+  [5]: d.getHours() > 12 ? 'pm' : 'am',
+});
 const codeMap = (input, code) => (code === 37 ? -1 : (code === 39 ? 1 : [
   5, 3, 7, 4, 4, 1
 ][input.stage] * (code === 40 ? 1 : -1))) * (input.stage === 4 ? 5 : 1) - (input.stage === 4 && int(input[4]) === 59 ? 4 : 0);
@@ -61,8 +68,8 @@ const codeMap = (input, code) => (code === 37 ? -1 : (code === 39 ? 1 : [
 export const DatePicker = props => (state, actions) => {
   const input = assign({}, props.default ? dateToDefaults(props.default()) : {}, selectInput(state, props.id) || {}),
     change = obj => actions.inputs.change({ id: props.id, obj }),
-    minStage = props.onlyTime ? 3 : 0,
-    maxStage = props.onlyDate ? 2 : 5,
+    minStage = props.onlyTime ? 3 : 0, // min start stage
+    maxStage = props.onlyDate ? 2 : 5, // max stage
     stage = (!defined(input.stage) ? int(props.stage) : input.stage) || minStage,
     completed = input.completed || int(props.stage) || minStage,
     filters = props.filters || {},
@@ -77,6 +84,10 @@ export const DatePicker = props => (state, actions) => {
       if ((value || input[stg - 1 < minStage ? minStage : stg - 1]) && s <= completed + 1)
         change(assign({ stage: s, open, date, completed: (stg <= completed ? completed : stg), value: '' }, value ? { [stage]: value } : {}));
     },
+    canSelect = (stage, value) => {
+      if (!props.minDate) return true;
+      return (buildDate(input, { [stage]: value }).getTime() > props.minDate().getTime());
+    },
     onfocus = e => input.open === true ? null : change({ stage: stage || 0, open: true }),
     oninput = e => change({
       value: (stage === 5 ? lim : onlyNum)(e.target.value, len),
@@ -90,46 +101,46 @@ export const DatePicker = props => (state, actions) => {
     Blur = blurProps => html`<Div
       onclick=${e => change({ open: false })}
       position="fixed"
-      top="0px"
-      bottom="0px"
-      right="0px"
-      left="0px"
+      all="0px"
       index="9000"></Div>`,
     Box = boxProps => html`<Div
-      width=${px(width)}
-      height=${px(height)}
+      oncreate=${e => change({ width: e.offsetWidth })}
+      onupdate=${(e, o) => e.id !== o.id && !input.width ? change({ width: e.offsetWidth }) : null}
+      minWidth=${px(width)}
+      minHeight=${px(height)}
       onclick=${e => (stage === maxStage ? noop : focus)(props.id)}
       box="column initial center"
       overflow="hidden"
-      position="absolute"
+      position="absolute|fixed|absolute"
+      all="initial|0px|initial"
       mt="2px"
       notSelectable
       shadow="0px 3px 15px rgba(0,0,0,0.2)"
       background="white"
       border="1px solid #ccc"
       index="14000"
-      p="20px">${boxProps.children}</Div>`,
+      pt="20px|40px|20px">${boxProps.children}</Div>`,
     Header = headerProps => html`<Div box="row center center" b>${headerProps.children}</Div>`,
     InnerBox = innerBoxProps => html`<Div
         flex="row"
         wrap="no-wrap"
         position="absolute"
-        pl="inherit" pr="inherit"
-        left=${`-${px(stage * (width + 20))}`}
-        mt="-20px"
+        pl="inherit"
+        pr="inherit"
+        left=${`-${px(stage * (input.width || width + 2))}`}
         minHeight=${px(height)}
-        transition="left .3s">${innerBoxProps.children}</Div>`,
+        transition=${input.width ? "left .3s" : 'none'}>${innerBoxProps.children}</Div>`,
     Content = contentProps => html`<Div
-        width=${px(contentProps.width)}
-        mr="20px"
+        width=${px(input.width)}
         box=${contentProps.box || 'row center center'}><Div
         ${contentProps.scrollIt ? { y: 'auto' } : {}}
-        ${ObjectRemove(contentProps, 'children', 'mt', 'p', 'width', 'height')}
-        box=${props.box || 'row center center'}
+        ${ObjectRemove(contentProps, 'children', 'box', 'innerBox', 'mt', 'p', 'width', 'height')}
+        box=${contentProps.innerBox || 'row center center'}
+        width=${contentProps.width || '80%'}
         wrap="wrap"
-        mt=${contentProps.mt || '20px'}
+        mt=${contentProps.mt || '0px'}
         height=${contentProps.height || 'inherit'}
-        p=${contentProps.p || '20px'}>${contentProps.children}</Div></Div>`,
+        p=${contentProps.p || '0px'}>${contentProps.children}</Div></Div>`,
     Item = itemProps => html`<Div
         ${ObjectRemove(itemProps, 'children', 'p')}
         box=${itemProps.box || 'row center center'}
@@ -138,8 +149,10 @@ export const DatePicker = props => (state, actions) => {
         unit=${itemProps.unit || 'default'}
         p=${itemProps.p || '10px'}
         pointer
-        onclick=${goto(int(stage) + 1, itemProps.last === true ? false : true, itemProps.value)}
-        background=${ampmToNum(input[stage]) === ampmToNum(itemProps.value) ? colors.highlight : ''}
+        onclick=${canSelect(stage, itemProps.value)
+          ? goto(int(stage) + 1, itemProps.last === true ? false : true, itemProps.value) : null}
+        background=${!canSelect(stage, itemProps.value) ? colors.light :
+          (ampmToNum(input[stage]) === ampmToNum(itemProps.value) ? colors.highlight : '')}
         hoverBackground=${colors.light}>${itemProps.children}</Div>`,
     SubMessage = () => html`<Div position="absolute" bottom="20px" right="0px" left="0px" textAlign="center" s="12px" color=${colors.light}>Start typing or click...</Div>`,
     overlayItem = (itemProps, v) => (assign({
@@ -152,8 +165,8 @@ export const DatePicker = props => (state, actions) => {
         box="row center center"
         position="absolute"
         index="10000"
-        height="100%"
         cursor="text"
+        all="0px"
         color=${input.open || input.touched ? colors.dark : colors.light}>
         ${input.touched && !input.open && input[0] && input[1] && input[2] ? html`
           <Div onclick=${goto(0, true)}>${cap(daysOfWeek[date.getDay()].slice(0, 3))} ${cap(monthNames[int(input[1]) - 1]).slice(0, 3)} ${input[2]}, ${str(input[0]).slice(2, 4)}'</Div>
@@ -175,42 +188,54 @@ export const DatePicker = props => (state, actions) => {
         <Input ${assign(props, { onfocus, onkeydown, oninput, color: 'rgba(0,0,0,0)' })}></Input>
         <Overlay></Overlay>
       </Div>
-      ${input.open ? html`<Div flex="column">
+      ${input.open ? html`<Div position="relative" flex="column">
         <Blur></Blur>
-        <Div position="relative">
-          <Box>
-            <Header>${(props.titles || titles)(input)[stage] || ''}</Header>
-            <InnerBox ${{ stage, width, height }}>
-              <Content ${{ width, height: '240px', scrollIt: true, p: '0px', mt: '45px' }}>${years.filter(filter)
-                .map(value => html`<Item ${{ value }}>
-                ${value}</Item>`)}</Content>
-              <Content ${{ pt: '60px', width, p: '10px', box: 'row center flex-start' }}>${monthNames
+        <Box ${{ change }}>
+          <Header>${(props.titles || titles)(input)[stage] || ''}</Header>
+          <InnerBox ${{ stage, width, height }}>
+            <Content width=${input.width} mt='20px' height='240px' scrollIt=${true} p='0px' mt='30px'>
+              ${years
+                  .filter(filter).map(value => html`<Item ${{ value }}>${value}</Item>`)}
+            </Content>
+
+            <Content pt='30px' width=${input.width} mt='20px' p='10px' box='row center flex-start'>
+              ${monthNames
                 .map((value, i) => html`<Item ${{ mt: '10px', width: '24%', value: i + 1 }}>
-                ${cap(value)}</Item>`)}</Content>
-              <Content ${{ p: '15%', box: 'row flex-start center', width }}>
-                ${['su', 'mo','tu','we','th','fr','sa'].map(v => html`<Div
+              ${cap(value)}</Item>`)}</Content>
+
+            <Content box='row center center' innerBox='row flex-start center' width='220px'>
+              ${['su', 'mo','tu','we','th','fr','sa']
+                .map(v => html`<Div
                   box="row center center"
                   color=${colors.dark}
                   width="30px" height="30px">
                   ${cap(v)}</Div>`)}
-                ${Array(monthOffset(input[0], int(input[1]) - 1)).fill(0).map(v => html`<Div
-                  width="30px" height="30px"></Div>`)}
-                ${days.map(value => html`<Item
-                ${{ value, p: '0px', width: '30px', height: '30px', last: maxStage === 3 }}>
+              ${Array(monthOffset(input[0], int(input[1]) - 1))
+                  .fill(0).map(v => html`<Div
+                    width="30px" height="30px"></Div>`)}
+              ${days
+                  .map(value => html`<Item
+                    ${{ value, p: '0px', width: '30px', height: '30px', last: maxStage === 3 }}>
+                    ${value}</Item>`)}</Content>
+
+            <Content height='80px' width='180px' mt='-40px' innerBox='row center flex-start'>
+              ${hours.map(value => html`<Item
+                ${{ width: '20px', height: '20px', value }}>
+                ${value}</Item>`)}</Content>
+
+            <Content height="80px" width= "180px" mt="-50px">
+              ${basicMinutes
+                .map(value => html`<Item
+                  ${{ width: '20px', height: '20px', value }}>
                   ${value}</Item>`)}</Content>
-              <Content ${{ p: '20%', pt: '15px', height: '80px', width }}>${hours.map(value => html`<Item
-                ${{ width: '20px', height: '20px', value }}>
-                ${value}</Item>`)}</Content>
-              <Content ${{ p: '22%', pt: "15px", height: '80px', width }}>${basicMinutes.map(value => html`<Item
-                ${{ width: '20px', height: '20px', value }}>
-                ${value}</Item>`)}</Content>
-              <Content ${{ width }}>${['am', 'pm'].map(value => html`<Item
+
+            <Content width=${input.width}>
+              ${['am', 'pm'].map(value => html`<Item
                 ${{ width: '20px', height: '20px', m: '10px', value, last: true }}>
                 ${value}</Item>`)}</Content>
-            </InnerBox>
-            <SubMessage></SubMessage>
-          </Box>
-        </Div>
+          </InnerBox>
+          <SubMessage></SubMessage>
+        </Box>
       </Div>` : ''}
     </Div>
   `;
