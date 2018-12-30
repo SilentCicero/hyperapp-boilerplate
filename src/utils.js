@@ -18,6 +18,10 @@ const html = hyperx((tag, props = {}, children = []) => {
     for (var i = 0; i < keys.length; i++) {
       const key = keys[i];
 
+      if (newProps[key].length && !isNaN(newProps[key])) {
+        newProps[key] = (newProps[key].indexOf('.') ? parseFloat : parseInt)(newProps[key]);
+      }
+
       if (newProps[key] === 'undefined') {
         newProps[key] = undefined;
       }
@@ -185,12 +189,14 @@ const noPx = v => onlyNum(v);
 const px = v => `${onlyNum(v)}px`;
 const zeroPad2 = v => defined(v) ? zeroPad(v) : v;
 const ampmToNum = v => lower(v) === 'am' ? 0 : (lower(v) === 'pm' ? 1 : int(v));
+const fill = v => Array(v).fill(0);
 
 const ObjectRemove = (o, ...a) => Object.keys(o)
   .filter(k => a.indexOf(k) === -1)
   .reduce((acc, k) => assign(acc, { [k]: o[k] }), {});
 
 module.exports = {
+  fill,
   ObjectRemove,
   defined,
   int,

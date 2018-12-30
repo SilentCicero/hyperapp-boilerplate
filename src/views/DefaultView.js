@@ -18,8 +18,7 @@ export const DefaultView = props => (state, actions) => {
       <Meta title="BookThatClass"></Meta>
 
       <DatePicker width="240px" filters=${[v => v > 2017 && v < 2020]}
-        minDate=${e => new Date()}
-        default=${e => new Date(2019, 7, 10)}
+        minDate=${e => new Date(2019, 1, 1)}
         stage="1" id="cal" p="20px"></DatePicker>
 
       <Select p="20px" id="cool" list=${monthNames.map(v => [v, v])} value=${'October'}></Select>
